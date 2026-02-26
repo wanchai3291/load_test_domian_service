@@ -1,0 +1,24 @@
+{
+  "name": "load_test_domian_service",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/wanchai3291/load_test_domian_service#readme",
+  "bugs": {
+    "url": "https://github.com/wanchai3291/load_test_domian_service/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://wanchai3291@github.com/wanchai3291/load_test_domian_service.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "dotenv": "^17.3.1",
+    "kafkajs": "^2.2.4"
+  }
+}
