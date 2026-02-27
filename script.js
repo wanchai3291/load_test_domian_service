@@ -7,7 +7,7 @@ const TOPIC = process.env.KAFKA_TOPIC;
 const BROKERS = process.env.BROKERS.split(",");
 
 const NUM_RECORDS = Infinity;
-const TIMEOUT_MS = 24 * 60 * 1000;
+const TIMEOUT_MS = 24 * 60 * 60 * 1000;
 
 const THROUGHPUT = 600;
 
