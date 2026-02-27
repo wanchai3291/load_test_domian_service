@@ -1,0 +1,15 @@
+[app]
+name = "kafka-loadtest"
+primary_region = "sin"  # Singapore - ใกล้ไทยที่สุด
+
+[build]
+dockerfile = "Dockerfile"
+
+[env]
+NODE_ENV = "production"
+
+# ไม่มี http service เพราะเป็น background worker
+[[services]]
+
+[processes]
+app = "node script.js"

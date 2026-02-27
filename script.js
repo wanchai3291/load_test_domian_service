@@ -6,11 +6,10 @@ const { Kafka } = require("kafkajs");
 const TOPIC = process.env.KAFKA_TOPIC;
 const BROKERS = process.env.BROKERS.split(",");
 
-const NUM_RECORDS = 1e6;
-const TIMEOUT_MS = 3600 * 1000;
+const NUM_RECORDS = Infinity;
+const TIMEOUT_MS = 20 * 60 * 1000;
 
 const THROUGHPUT = 600;
-const INTERVAL_MS = 1000 / THROUGHPUT;
 
 // ---- CONFLUENT CONFIG ----
 const PRODUCER_CONFIG = {
@@ -214,26 +213,33 @@ function buildMessage() {
   const latencies = [];
 
   while (sent < NUM_RECORDS && Date.now() < endTime) {
-    const message = buildMessage();
-    const t0 = Date.now();
+    const tickStart = Date.now();
 
-    await producer.send({
-      topic: TOPIC,
-      messages: [{ value: JSON.stringify(message) }],
+    // ยิง 600 messages พร้อมกันใน 1 วินาที
+    const promises = Array.from({ length: THROUGHPUT }, () => {
+      const t0 = Date.now();
+      return producer
+        .send({
+          topic: TOPIC,
+          messages: [{ value: JSON.stringify(buildMessage()) }],
+        })
+        .then(() => {
+          latencies.push(Date.now() - t0);
+          sent++;
+        });
     });
 
-    latencies.push(Date.now() - t0);
-    sent++;
+    await Promise.all(promises);
 
-    if (sent % 10 === 0) {
-      const elapsed = ((Date.now() - start) / 1000).toFixed(1);
-      const rpsNow = (sent / ((Date.now() - start) / 1000)).toFixed(1);
-      console.log(
-        `Sent ${sent} messages | elapsed: ${elapsed}s | RPS: ${rpsNow}`,
-      );
-    }
+    const elapsed = Date.now() - tickStart;
+    const rpsNow = (sent / ((Date.now() - start) / 1000)).toFixed(1);
+    console.log(
+      `Sent ${sent} messages | elapsed: ${((Date.now() - start) / 1000).toFixed(1)}s | RPS: ${rpsNow}`,
+    );
 
-    await new Promise((r) => setTimeout(r, INTERVAL_MS));
+    // รอให้ครบ 1 วินาทีก่อน tick ถัดไป
+    const wait = 1000 - elapsed;
+    if (wait > 0) await new Promise((r) => setTimeout(r, wait));
   }
 
   const totalDuration = (Date.now() - start) / 1000;
